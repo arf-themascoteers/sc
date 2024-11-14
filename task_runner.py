@@ -8,30 +8,23 @@ import train_test_evaluator
 
 
 class TaskRunner:
-    def __init__(self, task, tag="results", skip_all_bands=False, verbose=False, remove_bg=False, test=False, split="bsnet"):
+    def __init__(self, task, tag="results", verbose=False, remove_bg=False, split="bsnet"):
         torch.manual_seed(3)
         self.task = task
-        self.skip_all_bands = skip_all_bands
         self.verbose = verbose
         self.remove_bg = remove_bg
-        self.test = test
         self.tag = tag
-        self.reporter = Reporter(self.tag, self.skip_all_bands)
-        self.cache = pd.DataFrame(columns=["dataset","algorithm","props","cache_tag","oa","aa","k","time","selected_bands","selected_weights"])
+        self.reporter = Reporter(self.tag)
+        self.cache = pd.DataFrame(columns=["dataset","algorithm","cache_tag","oa","aa","k","time","selected_bands","selected_weights"])
         self.split = split
 
     def evaluate(self):
         for dataset_name in self.task["datasets"]:
-            dataset = DSManager(name=dataset_name, test=self.test, split=self.split)
-            if not self.skip_all_bands:
-                self.evaluate_for_all_features(dataset)
+            dataset = DSManager(name=dataset_name, split=self.split)
             for index, algorithm in enumerate(self.task["algorithms"]):
-                props = None
-                if "props" in self.task:
-                    props = self.task["props"][index]
                 for target_size in self.task["target_sizes"]:
                     print(dataset_name, algorithm, target_size)
-                    algorithm_object = Algorithm.create(algorithm, target_size, dataset, self.tag, self.reporter, self.verbose, self.test, props)
+                    algorithm_object = Algorithm.create(algorithm, target_size, dataset, self.tag, self.reporter, self.verbose)
                     self.process_a_case(algorithm_object)
 
         self.reporter.save_results()
@@ -43,7 +36,7 @@ class TaskRunner:
             oas, aas, ks, metric = self.get_results_for_a_case(algorithm)
             self.reporter.write_summary(algorithm, oas, aas, ks, metric)
         else:
-            print(algorithm.get_name(), "for", algorithm.dataset.get_name(), "for props", algorithm.get_props(), "for",
+            print(algorithm.get_name(), "for", algorithm.dataset.get_name(), "for",
                   algorithm.target_size,"was done. Skipping")
 
     def get_results_for_a_case(self, algorithm:Algorithm):
@@ -52,7 +45,6 @@ class TaskRunner:
             print(f"Selected features got from cache for {algorithm.dataset.get_name()} "
                   f"for size {algorithm.target_size} "
                   f"for {algorithm.get_name()} "
-                  f"for {algorithm.get_props()} "
                   f"for cache_tag {algorithm.get_cache_tag()}")
             algorithm.set_selected_indices(metric.selected_bands)
             algorithm.set_weights(metric.selected_weights)
@@ -60,7 +52,6 @@ class TaskRunner:
         print(f"NOT FOUND in cache for {algorithm.dataset.get_name()} "
               f"for size {algorithm.target_size} "
               f"for {algorithm.get_name()} "
-              f"for {algorithm.get_props()} "
               f"for cache_tag {algorithm.get_cache_tag()}. Computing.")
         oas, aas, ks, metric = algorithm.compute_performance()
         self.save_to_cache(algorithm, metric)
@@ -72,7 +63,6 @@ class TaskRunner:
         self.cache.loc[len(self.cache)] = {
             "dataset":algorithm.dataset.get_name(),
             "algorithm": algorithm.get_name(),
-            "props": algorithm.get_props(),
             "cache_tag": algorithm.get_cache_tag(),
             "time":metric.time,"oa":metric.oa,"aa":metric.aa,"k":metric.k,
             "selected_bands":algorithm.get_all_indices(),
@@ -87,7 +77,6 @@ class TaskRunner:
         rows = self.cache.loc[
             (self.cache["dataset"] == algorithm.dataset.get_name()) &
             (self.cache["algorithm"] == algorithm.get_name()) &
-            (self.cache["props"] == algorithm.get_props()) &
             (self.cache["cache_tag"] == algorithm.get_cache_tag())
         ]
         if len(rows) == 0:
