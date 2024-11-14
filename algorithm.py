@@ -8,18 +8,16 @@ import numpy as np
 
 
 class Algorithm(ABC):
-    def __init__(self, target_size:int, dataset, tag, reporter, verbose, test=False, props=None):
+    def __init__(self, target_size:int, dataset, tag, reporter, verbose):
         self.target_size = target_size
         self.dataset = dataset
         self.tag = tag
         self.reporter = reporter
         self.verbose = verbose
-        self.test = test
         self.selected_indices = None
         self.weights = None
         self.model = None
         self.all_indices = None
-        self.props = props
         self.reporter.create_epoch_report(tag, self.get_name(), self.dataset.get_name(), self.target_size)
         self.reporter.create_weight_report(tag, self.get_name(), self.dataset.get_name(), self.target_size)
         self.reporter.create_weight_all_report(tag, self.get_name(), self.dataset.get_name(), self.target_size)
@@ -82,11 +80,11 @@ class Algorithm(ABC):
         return 0
 
     @staticmethod
-    def create(name, target_size, dataset, tag, reporter, verbose, test, props):
+    def create(name, target_size, dataset, tag, reporter, verbose):
         class_name = f"Algorithm_{name}"
         module = importlib.import_module(f"algorithms.algorithm_{name}")
         clazz = getattr(module, class_name)
-        return clazz(target_size, dataset, tag, reporter, verbose, test, props)
+        return clazz(target_size, dataset, tag, reporter, verbose)
 
     def set_weights(self, mean_weight):
         self.weights = mean_weight
