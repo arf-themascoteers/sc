@@ -1,0 +1,61 @@
+bsdr oa aa k
+
+first clasification
+
+then add regression
+
+
+when adding regression
+==========================
+to calculate RMSE - use real scale data
+
+use of tag - refractor?
+
+1. classification
+2. regression
+3. bsdr
+4. multi
+5. loss
+6. diff datasets
+7. analyze results - explanation
+
+bsdr modific
+-distance increase
+variance? inverse l2?
+
+meeting
+=========
+1. loss curve
+2. loss equation (chain rule) - partial derivative
+
+
+linear -> cubic spline
+
+****
+result accumulator
+mso
+cubic spline
+relu instead of sigmoid
+l1 l2?
+mso
+---------------
+
+4 types of lucas texture - https://www.sciencedirect.com/science/article/pii/S0016706121004468
+
+===
+
+improve bsdr -> shortlist and then attention
+improve bsdr -> 2x and then make them converge and pick top x (shapely?)
+===================
+
+regression
+sigmoid -> relu
+bsdr attn
+with without dsc etc
+multi
+reasoning
+plots
+plots for loss etc
+
+=====================
+lucas -> bsdr shortlist -> run 1d-cnn
